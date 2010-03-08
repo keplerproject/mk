@@ -8,15 +8,20 @@ local response = require "wsapi.response"
 local hello = mk.new()
 
 function hello.index(wsapi_env)
-  return hello.render_index()
+  local req, res = request.new(wsapi_env, { mk_app = hello }), response.new()
+  res:write(hello.render_index(req, res))
+  return res:finish()
 end
 
 function hello.say(wsapi_env, params)
-  return hello.render_say(wsapi_env, params.name)
+  local req, res = request.new(wsapi_env, { mk_app = hello }), response.new()
+  res:write(hello.render_say(req, res, params.name))
+  return res:finish()
 end
 
 hello:dispatch_get("index", R"/", hello.index)
 hello:dispatch_get("say", R"/say/:name", hello.say)
+hello:dispatch_get("songs", R"/", "/samples/songs.lua")
 
 function hello.render_layout(inner_html)
   return string.format([[
@@ -27,21 +32,22 @@ function hello.render_layout(inner_html)
     ]], inner_html)
 end
 
-function hello.render_hello()
-  return [[<p>Hello World!</p>]]
+function hello.render_hello(req, res)
+  return string.format([[
+      <p><a href="%s">Link 1</a></p>
+      <p><a href="%s">Link 2</a></p>
+      <p>Hello World!</p>
+    ]], req:link_say({ greeting = "Hi" }, { name = "Foo" }),
+        req:link_songs())
 end
 
-function hello.render_index()
-  local res = response.new()
-  res:write(hello.render_layout(hello.render_hello()))
-  return res:finish()
+function hello.render_index(req, res)
+  return hello.render_layout(hello.render_hello(req, res))
 end
 
-function hello.render_say(wsapi_env, name)
-  local req, res = request.new(wsapi_env), response.new()
-  res:write(hello.render_layout(hello.render_hello() .. 
-				string.format([[<p>%s %s!</p>]], req.params.greeting or "Hello ", name)))
-  return res:finish()
+function hello.render_say(req, res, name)
+  return hello.render_layout(hello.render_hello(req, res) .. 
+				string.format([[<p>%s %s!</p>]], req.params.greeting or "Hello ", name))
 end
 
 return hello

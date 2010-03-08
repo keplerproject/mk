@@ -22,6 +22,9 @@ build = {
   modules = {
     ["mk"] = "src/mk.lua",
     ["mk.routes"] = "src/mk/routes.lua",
+    ["mk.util"] = "src/mk/util.lua",
+    ["mk.themes"] = "src/mk/themes.lua",
+    ["mk.template"] = "src/mk/template.lua",
   },
   copy_directories = { "samples", "doc", "tests" },
 }
