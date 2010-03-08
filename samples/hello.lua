@@ -11,12 +11,12 @@ function hello.index(wsapi_env)
   return hello.render_index()
 end
 
-function hello.say(wsapi_env, name)
-  return hello.render_say(wsapi_env, name)
+function hello.say(wsapi_env, params)
+  return hello.render_say(wsapi_env, params.name)
 end
 
 hello:dispatch_get("index", R"/", hello.index)
-hello:dispatch_get("say", R"/say/:msg", hello.say)
+hello:dispatch_get("say", R"/say/:name", hello.say)
 
 function hello.render_layout(inner_html)
   return string.format([[
@@ -39,9 +39,8 @@ end
 
 function hello.render_say(wsapi_env, name)
   local req, res = request.new(wsapi_env), response.new()
-  res:write(hello.render_layout(hello.render.hello .. 
-				string.format([[<p>%s</p>]], req.params.greeting or "Hello ") .. 
-			        name .. "!"))
+  res:write(hello.render_layout(hello.render_hello() .. 
+				string.format([[<p>%s %s!</p>]], req.params.greeting or "Hello ", name)))
   return res:finish()
 end
 

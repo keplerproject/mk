@@ -196,9 +196,9 @@ function mk.new(app)
   app.server_error = function (wsapi_env, msg)
 		       local res = response.new()
 		       res.status = 500
-		       res:write[[<html>
+		       res:write([[<html>
 			     <head><title>Server Error</title></head>
-			     <body><pre>]] .. msg .. [[</pre></body></html>]]
+		             <body><pre>]] .. msg .. [[</pre></body></html>]])
 		       return res:finish()
 		     end
   app.dispatch_table = { get = {}, post = {}, put = {}, delete = {} }
@@ -223,9 +223,9 @@ for _, method in ipairs{ "get", "post", "put", "delete" } do
 					end
 					local build
 					if type(handler) ~= "string" then
-					  table.insert(app_module.dispatch_table[method], { name = name,
-											    route = route, 
-											    handler = handler })
+					  table.insert(self.dispatch_table[method], { name = name,
+										      route = route, 
+										      handler = handler })
 					  if route.build then
 					    build = function (self, wsapi_env, ...)
 						      local prefix = self.prefix or wsapi_env.SCRIPT_NAME
