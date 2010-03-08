@@ -185,7 +185,6 @@ function mk.new(app)
   app.run = function (wsapi_env) 
 	      return mk.run(app, wsapi_env)
 	    end
-  app.real_path = wsapi.app_path or "."
   app.not_found = function (wsapi_env)
 		    local res = response.new()
 		    res.status = 400
@@ -206,44 +205,44 @@ function mk.new(app)
   return app
 end
 
-mk.pattern_parser_methods = {}
-mk.pattern_parser_methods.__index = mk.pattern_parser_methods
+mk.pattern_route_methods = {}
+mk.pattern_route_methods.__index = mk.pattern_route_methods
 
-function mk.pattern_parser_methods:match(s)
+function mk.pattern_route_methods:match(s)
   return self.pattern:match(s)
 end
 
-function mk.pattern_parser(parser)
-  return setmetatable({ pattern = "^" .. parser .. "$" }, mk.pattern_parser_methods)
+function mk.pattern_route(route)
+  return setmetatable({ pattern = "^" .. route .. "$" }, mk.pattern_route_methods)
 end
 
 for _, method in ipairs{ "get", "post", "put", "delete" } do
-  mk.methods["dispatch_" .. method] = function (self, name, parser, handler)
-					if type(parser) == "string" then
-					  parser = mk.pattern_parser(parser)
+  mk.methods["dispatch_" .. method] = function (self, name, route, handler)
+					if type(route) == "string" then
+					  route = mk.pattern_route(route)
 					end
 					local build
 					if type(handler) ~= "string" then
 					  table.insert(app_module.dispatch_table[method], { name = name,
-											    parser = parser, 
+											    route = route, 
 											    handler = handler })
-					  if parser.build then
+					  if route.build then
 					    build = function (self, wsapi_env, ...)
 						      local prefix = self.prefix or wsapi_env.SCRIPT_NAME
-						      return prefix .. parser:build(...) 
+						      return prefix .. route:build(...) 
 						    end
 					  end
-					elseif parser.build then
+					elseif route.build then
 					  build = function (self, wsapi_env, ...)
-						    return handler .. parser:build(...)
+						    return handler .. route:build(...)
 						  end
 					end
 					self["link_" .. name] = build
 				      end
 end
 
-function mk.methods:dispatch_static(parser)
-  self:dispatch_get(self:serve_file(), ...)
+function mk.methods:dispatch_static(name, route)
+  self:dispatch_get(name, route, self:serve_file())
 end
 
 function mk.methods:serve_file()
@@ -295,24 +294,6 @@ function mk.methods:serve_static(wsapi_env, filename)
   end
 end
 
-mk.web_methods = {}
-mk.web_methods.__index = mk.web_methods
-
-function mk.web_methods:set_cookie(name, value)
-  self.response:set_cookie(name, value)
-end
-
-function mk.web_methods:delete_cookie(name)
-  self.response:delete_cookie(name)
-end
-
-function mk.methods:web(wsapi_env, options)
-  local web = request.new(wsapi_env, options)
-  web.response = response.new()
-  web.prefix = self.prefix or wsapi_env.SCRIPT_NAME
-  return setmetatable(web, mk.web_methods)
-end
-
 function mk.methods:match(method, path, index)
   index = index or 0
   if #self.dispatch_table[method] == 0 then
@@ -320,7 +301,7 @@ function mk.methods:match(method, path, index)
   else
     for index = index+1, #self.dispatch_table[method] do
       local entry = self.dispatch_table[method][index]
-      local captures = { entry.parser:match(path) }
+      local captures = { entry.route:match(path) }
       if #captures > 0 then
 	return entry.handler, captures, index
       end
