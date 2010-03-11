@@ -85,7 +85,7 @@ end
 
 local function make_wsapi_app(user)
   return function (wsapi_env)
-	   assert(wsapi_env.REMOTE_USER == (user or ""))
+	   assert(wsapi_env.MK_AUTH_USER == (user or ""))
 	 end
 end
 

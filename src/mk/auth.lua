@@ -58,7 +58,7 @@ function methods:filter(wsapi_app)
 			  .. ";"):match(";%s*mk_auth_user=(.-)%s*;")
 	   if message then
 	     message = util.url_decode(message) 
-	     wsapi_env.REMOTE_USER = self:authenticate(message)
+	     wsapi_env.MK_AUTH_USER, wsapi_env.MK_AUTH_ERROR = self:authenticate(message)
 	   end
 	   return wsapi_app(wsapi_env, ...)
 	 end
