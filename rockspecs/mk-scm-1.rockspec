@@ -25,6 +25,7 @@ build = {
     ["mk.util"] = "src/mk/util.lua",
     ["mk.themes"] = "src/mk/themes.lua",
     ["mk.template"] = "src/mk/template.lua",
+    ["mk.auth"] = "src/mk/auth.lua",
   },
   copy_directories = { "samples", "doc", "tests" },
 }
