@@ -11,7 +11,7 @@ description = {
   homepage = "http://keplerproject.github.com/mk"
 }
 
-dependencies = { "wsapi >= cvs" }
+dependencies = { "wsapi == cvs" }
 
 source = {
   url = "git://github.com/keplerproject/mk.git"
