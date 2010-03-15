@@ -72,11 +72,11 @@ function methods:provider()
 	   if not data then
 	     data = { username = req.POST.username, 
 		      password = req.POST.password,
-		      expiration = tonumber(req.POST.expiration),
+		      persistent = req.POST.persistent,
 		      success = req.POST.success, failure = req.POST.failure }
 	   end
-	   local expires = data.expiration or (os.time() + self.expiration) -- one hour
-	   local user, message = self:login(data.username, data.password, expires)
+	   local expires = (data.persistent and (os.time() + self.expiration)) or nil
+	   local user, message = self:login(data.username, data.password)
 	   if user then
 	     res:set_cookie("mk_auth_user", { value = message, expires = expires })
 	     return res:redirect(data.success)

@@ -135,6 +135,22 @@ do
   local status, headers, res = a:provider()(env)
   assert(status == 302)
   assert(headers["Location"] == "/done")
+  local cookie = util.url_decode(headers["Set-Cookie"]:match("mk_auth_user=(.+)"))
+  local user, message = a:authenticate(cookie)
+  assert(user == "mascarenhas")
+end
+
+do
+  -- successful persistent login with json data
+  local a = auth.new(login, login_salt, session_salt)
+  local env = make_env_post("json=" .. json.encode({ username = "mascarenhas",
+						     password = "foobar",
+						     success = "/done",
+						     persistent = true,
+						     failure = "/fail" }))
+  local status, headers, res = a:provider()(env)
+  assert(status == 302)
+  assert(headers["Location"] == "/done")
   local cookie = util.url_decode(headers["Set-Cookie"]:match("mk_auth_user=(.-);"))
   local user, message = a:authenticate(cookie)
   assert(user == "mascarenhas")
@@ -170,6 +186,18 @@ do
   -- successful login with regular post data
   local a = auth.new(login, login_salt, session_salt)
   local env = make_env_post("username=mascarenhas&password=foobar&success=/done&failure=/fail")
+  local status, headers, res = a:provider()(env)
+  assert(status == 302)
+  assert(headers["Location"] == "/done")
+  local cookie = util.url_decode(headers["Set-Cookie"]:match("mk_auth_user=(.+)"))
+  local user, message = a:authenticate(cookie)
+  assert(user == "mascarenhas")
+end
+
+do
+  -- successful persistent login with regular post data
+  local a = auth.new(login, login_salt, session_salt)
+  local env = make_env_post("username=mascarenhas&password=foobar&persistent=1&success=/done&failure=/fail")
   local status, headers, res = a:provider()(env)
   assert(status == 302)
   assert(headers["Location"] == "/done")
