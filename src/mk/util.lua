@@ -28,4 +28,20 @@ function util.readfile(filename)
   end
 end
 
+function util.tostring(o)
+  local out = {}
+  if type(o) == "table" then
+    out[#out+1] = "{ "
+    for k, v in pairs(o) do
+      out[#out+1] = "[" .. util.tostring(k) .. "] = " .. util.tostring(v) .. ", "
+    end
+    out[#out+1] = "}"
+  elseif type(o) == "string" then
+    out[#out+1] = o:format("%q")
+  else
+    out[#out+1] = tostring(o)
+  end
+  return table.concat(out)
+end
+
 return util

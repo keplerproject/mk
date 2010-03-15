@@ -309,6 +309,25 @@ function mk.methods:match(method, path, index)
   end
 end
 
+function mk.methods:wrap(action)
+  local handler
+  if type(action) == "string" then
+    handler = self[action]
+  else
+    handler = action
+  end
+  return function (wsapi_env)
+	   local req = request.new(wsapi_env, { mk_app = self })
+	   local res = response.new()
+	   local ans = { handler(self, req, res) }
+	   if #ans == 0 then
+	     return res:finish()
+	   else
+	     return unpack(ans)
+	   end
+	 end
+end
+
 function mk.run(self, wsapi_env)
   local path = util.url_decode(wsapi_env.PATH_INFO)
   local method = string.lower(wsapi_env.REQUEST_METHOD)
