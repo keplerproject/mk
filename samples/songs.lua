@@ -30,15 +30,13 @@ end
 -- actions and routing
 --
 
-function songs.index(wsapi_env)
-   local req, res = request.new(wsapi_env, { mk_app = songs }), response.new()
+function songs:index(req, res)
    -- load and render the pages/main template of our theme
    res:write(songs.theme:load("pages/main", engine):render(req, res))
-   return res:finish()
 end
 
 -- internal route
-songs:dispatch_get("index", R"/", songs.index)
+songs:dispatch_get("index", R"/", songs:wrap("index"))
 -- route to another application
 songs:dispatch_get("hello", R"/say/:name", "/samples/hello.lua")
 
