@@ -312,14 +312,16 @@ end
 function mk.methods:wrap(action)
   local handler
   if type(action) == "string" then
-    handler = self[action]
+    handler = function (req, res, ...) 
+		return self[action](self, req, res) 
+	      end
   else
     handler = action
   end
-  return function (wsapi_env)
+  return function (wsapi_env, ...)
 	   local req = request.new(wsapi_env, { mk_app = self })
 	   local res = response.new()
-	   local ans = { handler(self, req, res) }
+	   local ans = { handler(req, res, ...) }
 	   if #ans == 0 then
 	     return res:finish()
 	   else

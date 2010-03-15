@@ -7,6 +7,7 @@ local response = require "wsapi.response"
 local cosmo = require "cosmo"
 local template = require "mk.template"
 local themes = require "mk.themes"
+local blocks = require "mk.blocks"
 
 ----------------------------------------------------------------
 -- create new mk application (it is also a wsapi app)
@@ -45,7 +46,11 @@ songs:dispatch_get("hello", R"/say/:name", "/samples/hello.lua")
 -- intializing table of block instances
 --
 
-songs.blocks = {}
+songs.blocks = {
+  links = blocks.links(songs, { title = "Links",
+				links = { { "Kepler", "http://www.keplerproject.org" },
+					  { "Lua", "http://www.lua.org" } } })
+}
 
 ----------------------------------------------------------------
 -- block prototypes
@@ -67,7 +72,7 @@ end
 -- sputnik would store this information in some SACI node
 local name = "default"
 local prefix = nil -- set to have a prefix in all template names
-local config = { areas = { main = { "song_list" } } }
+local config = { areas = { main = { "song_list", "links" } } }
 
 songs.theme = themes.new(songs.blocks, name, nil, config)
 

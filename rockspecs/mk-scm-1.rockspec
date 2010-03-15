@@ -23,6 +23,7 @@ build = {
     ["mk"] = "src/mk.lua",
     ["mk.routes"] = "src/mk/routes.lua",
     ["mk.forms"] = "src/mk/forms.lua",
+    ["mk.blocks"] = "src/mk/blocks.lua",
     ["mk.util"] = "src/mk/util.lua",
     ["mk.themes"] = "src/mk/themes.lua",
     ["mk.template"] = "src/mk/template.lua",
