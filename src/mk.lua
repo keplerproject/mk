@@ -254,7 +254,7 @@ end
 
 function mk.methods:serve_static()
    return function (wsapi_env)
-	    local filename = wsapi_env.APP_PATH .. wsapi_env.PATH_INFO
+	    local filename = wsapi.APP_PATH .. wsapi_env.PATH_INFO
 	    return self:serve_file(wsapi_env, filename)
 	  end
 end
@@ -341,6 +341,11 @@ function mk.run(self, wsapi_env)
   local path = util.url_decode(wsapi_env.PATH_INFO)
   local method = string.lower(wsapi_env.REQUEST_METHOD)
   local handler, captures, index = self:match(method, path)
+  if util.empty(wsapi_env.APP_PATH) then
+    self.app_path = "."
+  else
+    self.app_path = wsapi_env.APP_PATH
+  end
   handler = handler or self.not_found
   captures = captures or {}
   repeat
