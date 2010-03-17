@@ -1,7 +1,6 @@
 #!/usr/bin/env wsapi.cgi
 
 local mk = require "mk"
-local R = require "mk.routes"
 local request = require "wsapi.request"
 local response = require "wsapi.response"
 local cosmo = require "cosmo"
@@ -36,9 +35,9 @@ function songs:index(req, res)
 end
 
 -- internal route
-songs:dispatch_get("index", R"/", songs:wrap("index"))
+songs:dispatch_get("index", "/")
 -- route to another application
-songs:dispatch_get("hello", R"/say/:name", "/samples/hello.lua")
+songs:dispatch_get("hello", "/say/:name", "/samples/hello.lua")
 
 ----------------------------------------------------------------
 -- intializing table of block instances

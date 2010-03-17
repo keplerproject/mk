@@ -1,7 +1,6 @@
 #!/usr/bin/env wsapi.cgi
 
 local mk = require "mk"
-local R = require "mk.routes"
 local request = require "wsapi.request"
 local response = require "wsapi.response"
 
@@ -19,9 +18,9 @@ function hello.say(wsapi_env, params)
   return res:finish()
 end
 
-hello:dispatch_get("index", R"/", hello.index)
-hello:dispatch_get("say", R"/say/:name", hello.say)
-hello:dispatch_get("songs", R"/", "/samples/songs.lua")
+hello:dispatch_get("index", "/", hello.index)
+hello:dispatch_get("say", "/say/:name", hello.say)
+hello:dispatch_get("songs", "/", "/samples/songs.lua")
 
 function hello.render_layout(inner_html)
   return string.format([[

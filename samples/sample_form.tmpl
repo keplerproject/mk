@@ -44,10 +44,10 @@ $form{ id = "myform", url = req:link_post_data() }[[
      flash = { class = "field_flash" }, disabled = true }
   $richtext{ label = "Body", field = "body", width = 100, height = 5 }
   $check{ label = "Published", field = "published", default = true }
-  $combo{ label = "Section", field = "section", url = req:link_sections() }
-  $radio{ label = "Subsection", field = "subsection", url = req:link_sections() }
-  $multi{ label = "Keywords", field = "keywords", url = req:link_tags(), disabled = false }
-  $tag{ label = "Tags", field = "tags", url = req:link_tags(), disabled = false }
+  $combo{ label = "Section", field = "section", url = req:link_get_sections() }
+  $radio{ label = "Subsection", field = "subsection", url = req:link_get_sections() }
+  $multi{ label = "Keywords", field = "keywords", url = req:link_get_tags(), disabled = false }
+  $tag{ label = "Tags", field = "tags", url = req:link_get_tags(), disabled = false }
   $date{ label = "Published at", field = "published_at" }
   $detail{ label = "Detail", form = "#detailform", field = "detail" }
   $button{ id = "save", label = "Save", action = "post" }

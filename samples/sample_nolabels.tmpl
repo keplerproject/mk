@@ -51,15 +51,15 @@ $form{ id = "myform", url = req:link_post_data(), obj =
     </tr>
     <tr>
       <td>Section</td>
-      <td>$combo{ field = "section", url = req:link_sections() }</td>
+      <td>$combo{ field = "section", url = req:link_get_sections() }</td>
     </tr>
     <tr>
       <td>Subection</td>
-      <td>$radio{ field = "subsection", url = req:link_sections(), wrap_ul = true }</td>
+      <td>$radio{ field = "subsection", url = req:link_get_sections(), wrap_ul = true }</td>
     </tr>
     <tr>
       <td>Tags</td>
-      <td>$tag{ field = "tags", url = req:link_tags(), disabled = false,
+      <td>$tag{ field = "tags", url = req:link_get_tags(), disabled = false,
 	list = { { id = 1, name = 'TAG1' }, { id = 2, name =
 	'tag2' }, { id =  3, name = 'TAG3' }, { id = 4, name = 'tag4' } } }</td>
     </tr>

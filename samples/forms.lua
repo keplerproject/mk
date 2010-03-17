@@ -2,7 +2,6 @@
 local mk = require "mk"
 local forms = require "mk.forms"
 local util = require "mk.util"
-local R = require "mk.routes"
 local request = require "wsapi.request"
 local response = require "wsapi.response"
 local cosmo = require "cosmo"
@@ -27,12 +26,12 @@ local data = {
   }
 }
 
-function server:getdata(req, res)
+function server:get_data(req, res)
   res:content_type("application/json")
   res:write(json.encode(data))
 end
 
-function server:postdata(req, res)
+function server:post_data(req, res)
   res:content_type("application/json")
   print("post")
   print(req.POST.json)
@@ -45,13 +44,13 @@ function server:postdata(req, res)
   end
 end
 
-function server:getsections(req, res)
+function server:get_sections(req, res)
   res:content_type("application/json")
   res:write([[{ "list": [ { "id": 1, "name": "Section 1" }, { "id": 2, "name": "Section 2" }, 
 		  { "id": 3, "name": "Section 3" } ] }]])
 end
 
-function server:gettags(req, res)
+function server:get_tags(req, res)
   res:content_type("application/json")
   res:write([[{ "list": [ { "id": 1, "name": "tag1" }, { "id": 2, "name": "tag2" }, 
 		  { "id": 3, "name": "tag3" }, { "id": 4, "name": "tag4" } ] }]])
@@ -63,13 +62,13 @@ function server:index(req, res)
 						css = forms.css, req = req }))
 end
 
-server:dispatch_get("index", R"/", server:wrap("index"))
-server:dispatch_get("main", R"/main", server:wrap("index"))
-server:dispatch_get("get_data", R"/data", server:wrap("getdata"))
-server:dispatch_post("post_data", R"/data", server:wrap("postdata"))
-server:dispatch_get("get_other", R"/other", server:wrap("getdata"))
-server:dispatch_post("post_other", R"/other", server:wrap("postdata"))
-server:dispatch_get("sections", R"/sections", server:wrap("getsections"))
-server:dispatch_get("tags", R"/tags", server:wrap("gettags"))
+server:dispatch_get("index", "/")
+server:dispatch_get("main", "/main", server:wrap("index"))
+server:dispatch_get("get_data", "/data")
+server:dispatch_post("post_data", "/data")
+server:dispatch_get("get_other", "/other", server:wrap("get_data"))
+server:dispatch_post("post_other", "/other", server:wrap("post_data"))
+server:dispatch_get("get_sections", "/sections")
+server:dispatch_get("get_tags", "/tags")
 
 return server

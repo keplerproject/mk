@@ -1,7 +1,6 @@
 #!/usr/bin/env wsapi.cgi
 
 local mk = require "mk"
-local R = require "mk.routes"
 local crypto = require "crypto"
 local request = require "wsapi.request"
 local response = require "wsapi.response"
@@ -27,10 +26,11 @@ function hello.login(user, pass)
   end
 end
 
-hello.auth = auth.new(hello.login, login_salt, session_salt)
+hello.auth = auth.new{ login = hello.login, 
+		       login_salt = login_salt,
+		       session_salt = session_salt }
 
-function hello.index(wsapi_env)
-  local req, res = request.new(wsapi_env, { mk_app = hello }), response.new()
+function hello.index(req, res)
   res:write(hello.render_index(req, res))
   return res:finish()
 end
@@ -47,11 +47,11 @@ function hello.logoff(wsapi_env)
   return res:redirect(req:link_index())
 end
 
-hello:dispatch_get("index", R"/", hello.index)
-hello:dispatch_get("say", R"/say/:name", hello.say)
-hello:dispatch_get("songs", R"/", "/samples/songs.lua")
-hello:dispatch_post("login", R"/login", hello.auth:provider())
-hello:dispatch_get("logoff", R"/logoff", hello.logoff)
+hello:dispatch_get("index", "/", hello:wrap(hello.index))
+hello:dispatch_get("say", "/say/:name", hello.say)
+hello:dispatch_get("songs", "/", "/samples/songs.lua")
+hello:dispatch_post("login", "/login", hello.auth:provider())
+hello:dispatch_get("logoff", "/logoff", hello.logoff)
 
 function hello.render_layout(inner_html)
   return string.format([[
