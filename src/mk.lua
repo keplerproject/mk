@@ -5,6 +5,8 @@ local util = require "wsapi.util"
 local _, lfs = pcall(require, "lfs")
 local _, md5 = pcall(require, "md5")
 
+local R = require "mk.routes"
+
 local mk = { _NAME = "mk" }
 
 mk._NAME = "mk"
@@ -226,7 +228,7 @@ for _, method in ipairs{ "get", "post", "put", "delete" } do
   mk.methods["dispatch_" .. method] = function (self, name, route, handler)
 					handler = handler or self:wrap(name)
 					if type(route) == "string" then
-					  route = mk.pattern_route(route)
+					  route = R(route)
 					end
 					local build
 					if type(handler) ~= "string" then
@@ -341,10 +343,10 @@ function mk.run(self, wsapi_env)
   local path = util.url_decode(wsapi_env.PATH_INFO)
   local method = string.lower(wsapi_env.REQUEST_METHOD)
   local handler, captures, index = self:match(method, path)
-  if util.empty(wsapi_env.APP_PATH) then
-    self.app_path = "."
-  else
+  if util.not_empty(wsapi_env.APP_PATH) then
     self.app_path = wsapi_env.APP_PATH
+  else
+    self.app_path = "."
   end
   handler = handler or self.not_found
   captures = captures or {}
