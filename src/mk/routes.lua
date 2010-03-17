@@ -50,7 +50,7 @@ local opt_param = re.compile[[ {[/%.]} '?:' {[%w_]+} '?' &('/' / {'.'} / !.) ]] 
 		   
 local splat = re.compile[[ {[/%.]} {'*'} &('/' / '.' / !.) ]] /
                   function (prefix)
-		    return prefix, { cap = "*", tag = "splat", prefix = prefix }
+		    return { cap = "*", tag = "splat", prefix = prefix }
 		  end
 		
 local rest = lpeg.C((lpeg.P(1) - param - opt_param - splat)^1)
@@ -59,12 +59,14 @@ local function fold_caps(cap, acc)
   if type(cap) == "string" then
     return { cap = lpeg.P(cap) * acc.cap, clean = lpeg.P(cap) * acc.clean }
   elseif cap.cap == "*" then
-    return { cap = (lpeg.Carg(1) * lpeg.C((lpeg.P(1) - acc.clean)^1) / 
+    return { cap = (lpeg.Carg(1) * (lpeg.P(cap.prefix) * lpeg.C((lpeg.P(1) - acc.clean)^0))^-1 / 
 		function (params, splat)
 		  if not params.splat then params.splat = {} end
-		  params.splat[#params.splat+1] = wsapi.util.url_decode(splat)
+		  if splat and splat ~= "" then
+		    params.splat[#params.splat+1] = wsapi.util.url_decode(splat)
+		  end
 		end) * acc.cap,
-	   clean = (lpeg.P(1) - acc.clean)^1 * acc.clean }
+	   clean = (lpeg.P(cap.prefix) * (lpeg.P(1) - acc.clean)^0)^-1 * acc.clean }
   else
     return { cap = cap.cap * acc.cap, clean = cap.clean * acc.clean }
   end
@@ -88,15 +90,17 @@ local route = lpeg.Ct((param + opt_param + splat + rest)^1 * lpeg.P(-1)) /
 local function build(parts, params)
   local res = {}
   local i = 1
+  params = params or {}
+  params.splat = params.splat or {}
   for _, part in ipairs(parts) do
     if part.tag == "param" then
       local s = string.gsub (params[part.name], "([^%.@]+)",
 			     function (s) return wsapi.util.url_encode(s) end)
       res[#res+1] = part.prefix .. s
     elseif part.tag == "splat" then
-      local s = string.gsub (params.splat[i], "([^/%.@]+)",
+      local s = string.gsub (params.splat[i] or "", "([^/%.@]+)",
 			     function (s) return wsapi.util.url_encode(s) end)
-      res[#res+1] = s
+      res[#res+1] = part.prefix .. s
       i = i + 1
     elseif part.tag == "opt" then
       if params and params[part.name] then

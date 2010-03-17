@@ -246,6 +246,11 @@ for _, method in ipairs{ "get", "post", "put", "delete" } do
 						    return handler .. route:build(...)
 						  end
 					end
+					if route.build then
+					  self["route_" .. name] = function (self, ...)
+								     return route:build(...)
+								   end
+					end
 					self["link_" .. name] = build
 				      end
 end
