@@ -89,46 +89,10 @@ local function make_wsapi_app(user)
 	 end
 end
 
-local function make_env_get(qs)
-   return {
-      REQUEST_METHOD = "GET",
-      QUERY_STRING = qs or "",
-      CONTENT_LENGTH = 0,
-      PATH_INFO = "/",
-      SCRIPT_NAME = "",
-      CONTENT_TYPE = "x-www-form-urlencoded",
-      input = {
-         read = function () return nil end
-      }
-   }
-end
-
-local function make_env_post(pd, type, qs)
-   pd = pd or ""
-   return {
-      REQUEST_METHOD = "POST",
-      QUERY_STRING = qs or "",
-      CONTENT_LENGTH = #pd,
-      PATH_INFO = "/",
-      CONTENT_TYPE = type or "x-www-form-urlencoded",
-      SCRIPT_NAME = "",
-      input = {
-         post_data = pd,
-         current = 1,
-         read = function (self, len)
-                   if self.current > #self.post_data then return nil end
-                   local s = self.post_data:sub(self.current, len)
-                   self.current = self.current + len
-                   return s
-                end
-      }
-   }
-end
-
 do
   -- successful login with json data
   local a = auth.new(login, login_salt, session_salt)
-  local env = make_env_post("json=" .. json.encode({ username = "mascarenhas",
+  local env = util.make_env_post("json=" .. json.encode({ username = "mascarenhas",
 						     password = "foobar",
 						     success = "/done",
 						     failure = "/fail" }))
@@ -143,7 +107,7 @@ end
 do
   -- successful persistent login with json data
   local a = auth.new(login, login_salt, session_salt)
-  local env = make_env_post("json=" .. json.encode({ username = "mascarenhas",
+  local env = util.make_env_post("json=" .. json.encode({ username = "mascarenhas",
 						     password = "foobar",
 						     success = "/done",
 						     persistent = true,
@@ -159,7 +123,7 @@ end
 do
   -- bad login with json data, wrong password
   local a = auth.new(login, login_salt, session_salt)
-  local env = make_env_post("json=" .. json.encode({ username = "mascarenhas",
+  local env = util.make_env_post("json=" .. json.encode({ username = "mascarenhas",
 						     password = "foo",
 						     success = "/done",
 						     failure = "/fail" }))
@@ -172,7 +136,7 @@ end
 do
   -- bad login with json data, unknown user
   local a = auth.new(login, login_salt, session_salt)
-  local env = make_env_post("json=" .. json.encode({ username = "fabio",
+  local env = util.make_env_post("json=" .. json.encode({ username = "fabio",
 						     password = "foo",
 						     success = "/done",
 						     failure = "/fail" }))
@@ -185,7 +149,7 @@ end
 do
   -- successful login with regular post data
   local a = auth.new(login, login_salt, session_salt)
-  local env = make_env_post("username=mascarenhas&password=foobar&success=/done&failure=/fail")
+  local env = util.make_env_post("username=mascarenhas&password=foobar&success=/done&failure=/fail")
   local status, headers, res = a:provider()(env)
   assert(status == 302)
   assert(headers["Location"] == "/done")
@@ -197,7 +161,7 @@ end
 do
   -- successful persistent login with regular post data
   local a = auth.new(login, login_salt, session_salt)
-  local env = make_env_post("username=mascarenhas&password=foobar&persistent=1&success=/done&failure=/fail")
+  local env = util.make_env_post("username=mascarenhas&password=foobar&persistent=1&success=/done&failure=/fail")
   local status, headers, res = a:provider()(env)
   assert(status == 302)
   assert(headers["Location"] == "/done")
@@ -209,7 +173,7 @@ end
 do
   -- successful authorization
   local a = auth.new(login, login_salt, session_salt)
-  local env = make_env_get()
+  local env = util.make_env_get()
   local user, message = a:login("mascarenhas", "foobar")
   env.HTTP_COOKIE = "mk_auth_user=" .. util.url_encode(message)
   local ok = pcall(a:filter(make_wsapi_app("mascarenhas")), env)
@@ -219,7 +183,7 @@ end
 do
   -- unsuccessful authorization, no cookie
   local a = auth.new(login, login_salt, session_salt)
-  local env = make_env_get()
+  local env = util.make_env_get()
   local ok = pcall(a:filter(make_wsapi_app("mascarenhas")), env)
   assert(not ok)
 end
@@ -228,7 +192,7 @@ do
   -- unsuccessful authorization, expired cookie
   local a = auth.new(login, login_salt, session_salt, 0)
   local user, message = a:login("mascarenhas", "foobar")
-  local env = make_env_get()
+  local env = util.make_env_get()
   env.HTTP_COOKIE = "mk_auth_user=" .. util.url_encode(message)
   local ok = pcall(a:filter(make_wsapi_app("mascarenhas")), env)
   assert(not ok)
@@ -238,7 +202,7 @@ do
   -- unsuccessful authorization, forged cookie
   local a = auth.new(login, login_salt, session_salt, 0)
   local user, message = a:login("mascarenhas", "foobar")
-  local env = make_env_get()
+  local env = util.make_env_get()
   env.HTTP_COOKIE = "mk_auth_user=" .. util.url_encode(message:gsub("mascarenhas", "carregal"))
   local ok = pcall(a:filter(make_wsapi_app("carregal")), env)
   assert(not ok)

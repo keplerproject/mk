@@ -171,6 +171,12 @@ mk.mime_types = {
   atom = "application/atom+xml"
 }
 
+mk.mime_extensions = {}
+
+for ext, type in pairs(mk.mime_types) do
+  mk.mime_extensions[type] = ext
+end
+
 mk.methods = {}
 
 function mk.new(app)
@@ -218,6 +224,7 @@ end
 
 for _, method in ipairs{ "get", "post", "put", "delete" } do
   mk.methods["dispatch_" .. method] = function (self, name, route, handler)
+					handler = handler or self:wrap(name)
 					if type(route) == "string" then
 					  route = mk.pattern_route(route)
 					end
@@ -242,17 +249,17 @@ for _, method in ipairs{ "get", "post", "put", "delete" } do
 end
 
 function mk.methods:dispatch_static(name, route)
-  self:dispatch_get(name, route, self:serve_file())
+  self:dispatch_get(name, route, self:serve_static())
 end
 
-function mk.methods:serve_file()
+function mk.methods:serve_static()
    return function (wsapi_env)
 	    local filename = wsapi_env.APP_PATH .. wsapi_env.PATH_INFO
-	    return self:serve_static(wsapi_env, filename)
+	    return self:serve_file(wsapi_env, filename)
 	  end
 end
 
-function mk.methods:serve_static(wsapi_env, filename)
+function mk.methods:serve_file(wsapi_env, filename)
   local res = response.new()
   local ext = string.match(filename, "%.([^%.]+)$")
   if self.use_xsendfile then
