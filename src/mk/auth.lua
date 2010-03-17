@@ -10,11 +10,12 @@ local auth = {}
 local methods = {}
 methods.__index = methods
 
-function auth.new(login_function, login_salt, session_salt, expiration)
-  return setmetatable({ login_function = login_function,
-			login_salt = login_salt, 
-			session_salt = session_salt,
-		        expiration = expiration or 3600 }, methods)
+function auth.new(params)
+  return setmetatable({ login_function = params.login,
+			login_salt = params.login_salt, 
+			session_salt = params.session_salt,
+		        expiration = params.expiration or 3600,
+		        cookie_name = params.cookie or "mk_auth_user"}, methods)
 end
 
 function methods:login(username, password, expiration)
@@ -35,7 +36,7 @@ end
 
 function methods:logoff(headers)
   local res = response.new(nil, headers)
-  res:delete_cookie("mk_auth_user")
+  res:delete_cookie(self.cookie_name)
 end
 
 function methods:authenticate(message)
@@ -55,7 +56,7 @@ end
 function methods:filter(wsapi_app)
   return function (wsapi_env, ...)
 	   local message = (";" .. (wsapi_env.HTTP_COOKIE or "")
-			  .. ";"):match(";%s*mk_auth_user=(.-)%s*;")
+			  .. ";"):match(";%s*" .. self.cookie_name .. "=(.-)%s*;")
 	   if message then
 	     message = util.url_decode(message) 
 	     wsapi_env.MK_AUTH_USER, wsapi_env.MK_AUTH_ERROR = self:authenticate(message)
@@ -78,10 +79,10 @@ function methods:provider()
 	   local expires = (data.persistent and (os.time() + self.expiration)) or nil
 	   local user, message = self:login(data.username, data.password)
 	   if user then
-	     res:set_cookie("mk_auth_user", { value = message, expires = expires })
+	     res:set_cookie(self.cookie_name, { value = message, expires = expires })
 	     return res:redirect(data.success)
 	   else
-	     res:delete_cookie("mk_auth_user")
+	     res:delete_cookie(self.cookie_name)
 	     return res:redirect(data.failure .. "?message=" .. util.url_encode(message))
 	   end
 	 end

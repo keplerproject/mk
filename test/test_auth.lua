@@ -23,7 +23,8 @@ end
 
 do
   -- basic login
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local user, message = a:login("mascarenhas", "foobar")
   assert(user == "mascarenhas")
   assert(a:authenticate(message) == "mascarenhas")
@@ -31,7 +32,8 @@ end
 
 do
   -- wrong password
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local user, message = a:login("mascarenhas", "foo")
   assert(not user)
   assert(message == "invalid password")
@@ -39,7 +41,8 @@ end
 
 do
   -- unknown user
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local user, message = a:login("fabio", "foo")
   assert(not user)
   assert(message == "user not found")
@@ -47,7 +50,9 @@ end
 
 do
   -- login expired
-  local a = auth.new(login, login_salt, session_salt, 0)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt,
+		      expiration = 0 }
   local user, message = a:login("mascarenhas", "foobar")
   assert(user == "mascarenhas")
   user, message = a:authenticate(message)
@@ -57,7 +62,8 @@ end
 
 do
   -- try to impersonate user
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local user, message = a:login("mascarenhas", "foobar")
   assert(user == "mascarenhas")
   message = message:gsub("mascarenhas", "carregal")
@@ -68,7 +74,8 @@ end
 
 do
   -- try to change expiration
-  local a = auth.new(login, login_salt, session_salt, 0)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt, expiration = 0 }
   local user, message = a:login("mascarenhas", "foobar")
   assert(user == "mascarenhas")
   message = message:gsub("exp=%d+", "exp=" .. (os.time() + 3600))
@@ -79,7 +86,8 @@ end
 
 do
   -- test salt algorithm
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   assert(users["mascarenhas"] == a:salt_password("foobar"))
 end
 
@@ -91,7 +99,8 @@ end
 
 do
   -- successful login with json data
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local env = util.make_env_post("json=" .. json.encode({ username = "mascarenhas",
 						     password = "foobar",
 						     success = "/done",
@@ -105,8 +114,25 @@ do
 end
 
 do
+  -- successful login with json data, change cookie name
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt, cookie = "cookie" }
+  local env = util.make_env_post("json=" .. json.encode({ username = "mascarenhas",
+						     password = "foobar",
+						     success = "/done",
+						     failure = "/fail" }))
+  local status, headers, res = a:provider()(env)
+  assert(status == 302)
+  assert(headers["Location"] == "/done")
+  local cookie = util.url_decode(headers["Set-Cookie"]:match("cookie=(.+)"))
+  local user, message = a:authenticate(cookie)
+  assert(user == "mascarenhas")
+end
+
+do
   -- successful persistent login with json data
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local env = util.make_env_post("json=" .. json.encode({ username = "mascarenhas",
 						     password = "foobar",
 						     success = "/done",
@@ -122,7 +148,8 @@ end
 
 do
   -- bad login with json data, wrong password
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local env = util.make_env_post("json=" .. json.encode({ username = "mascarenhas",
 						     password = "foo",
 						     success = "/done",
@@ -135,7 +162,8 @@ end
 
 do
   -- bad login with json data, unknown user
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local env = util.make_env_post("json=" .. json.encode({ username = "fabio",
 						     password = "foo",
 						     success = "/done",
@@ -148,7 +176,8 @@ end
 
 do
   -- successful login with regular post data
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local env = util.make_env_post("username=mascarenhas&password=foobar&success=/done&failure=/fail")
   local status, headers, res = a:provider()(env)
   assert(status == 302)
@@ -160,7 +189,8 @@ end
 
 do
   -- successful persistent login with regular post data
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local env = util.make_env_post("username=mascarenhas&password=foobar&persistent=1&success=/done&failure=/fail")
   local status, headers, res = a:provider()(env)
   assert(status == 302)
@@ -171,8 +201,8 @@ do
 end
 
 do
-  -- successful authorization
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local env = util.make_env_get()
   local user, message = a:login("mascarenhas", "foobar")
   env.HTTP_COOKIE = "mk_auth_user=" .. util.url_encode(message)
@@ -182,7 +212,8 @@ end
 
 do
   -- unsuccessful authorization, no cookie
-  local a = auth.new(login, login_salt, session_salt)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
   local env = util.make_env_get()
   local ok = pcall(a:filter(make_wsapi_app("mascarenhas")), env)
   assert(not ok)
@@ -190,7 +221,8 @@ end
 
 do
   -- unsuccessful authorization, expired cookie
-  local a = auth.new(login, login_salt, session_salt, 0)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt, expiration = 0 }
   local user, message = a:login("mascarenhas", "foobar")
   local env = util.make_env_get()
   env.HTTP_COOKIE = "mk_auth_user=" .. util.url_encode(message)
@@ -200,7 +232,8 @@ end
 
 do
   -- unsuccessful authorization, forged cookie
-  local a = auth.new(login, login_salt, session_salt, 0)
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt, expires = 0 }
   local user, message = a:login("mascarenhas", "foobar")
   local env = util.make_env_get()
   env.HTTP_COOKIE = "mk_auth_user=" .. util.url_encode(message:gsub("mascarenhas", "carregal"))
