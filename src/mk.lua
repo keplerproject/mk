@@ -191,24 +191,24 @@ function mk.new(app)
     app[k] = v
   end
   app.run = function (wsapi_env) 
-	      return mk.run(app, wsapi_env)
-	    end
+              return mk.run(app, wsapi_env)
+            end
   app.not_found = function (wsapi_env)
-		    local res = response.new()
-		    res.status = 400
-		    res:write[[<html>
-			  <head><title>Not Found</title></head>
-			  <body><p>Not found!</p></body></html>]]
-		    return res:finish()
-		  end
+                    local res = response.new()
+                    res.status = 400
+                    res:write[[<html>
+                          <head><title>Not Found</title></head>
+                          <body><p>Not found!</p></body></html>]]
+                    return res:finish()
+                  end
   app.server_error = function (wsapi_env, msg)
-		       local res = response.new()
-		       res.status = 500
-		       res:write([[<html>
-			     <head><title>Server Error</title></head>
-		             <body><pre>]] .. msg .. [[</pre></body></html>]])
-		       return res:finish()
-		     end
+                       local res = response.new()
+                       res.status = 500
+                       res:write([[<html>
+                             <head><title>Server Error</title></head>
+                             <body><pre>]] .. msg .. [[</pre></body></html>]])
+                       return res:finish()
+                     end
   app.dispatch_table = { get = {}, post = {}, put = {}, delete = {} }
   return app
 end
@@ -226,33 +226,33 @@ end
 
 for _, method in ipairs{ "get", "post", "put", "delete" } do
   mk.methods["dispatch_" .. method] = function (self, name, route, handler)
-					handler = handler or self:wrap(name)
-					if type(route) == "string" then
-					  route = R(route)
-					end
-					local build
-					if type(handler) ~= "string" then
-					  table.insert(self.dispatch_table[method], { name = name,
-										      route = route, 
-										      handler = handler })
-					  if route.build then
-					    build = function (self, wsapi_env, ...)
-						      local prefix = self.prefix or wsapi_env.SCRIPT_NAME
-						      return prefix .. route:build(...) 
-						    end
-					  end
-					elseif route.build then
-					  build = function (self, wsapi_env, ...)
-						    return handler .. route:build(...)
-						  end
-					end
-					if route.build then
-					  self["route_" .. name] = function (self, ...)
-								     return route:build(...)
-								   end
-					end
-					self["link_" .. name] = build
-				      end
+                                        handler = handler or self:wrap(name)
+                                        if type(route) == "string" then
+                                          route = R(route)
+                                        end
+                                        local build
+                                        if type(handler) ~= "string" then
+                                          table.insert(self.dispatch_table[method], { name = name,
+                                                                                      route = route, 
+                                                                                      handler = handler })
+                                          if route.build then
+                                            build = function (self, wsapi_env, ...)
+                                                      local prefix = self.prefix or wsapi_env.SCRIPT_NAME
+                                                      return prefix .. route:build(...) 
+                                                    end
+                                          end
+                                        elseif route.build then
+                                          build = function (self, wsapi_env, ...)
+                                                    return handler .. route:build(...)
+                                                  end
+                                        end
+                                        if route.build then
+                                          self["route_" .. name] = function (self, ...)
+                                                                     return route:build(...)
+                                                                   end
+                                        end
+                                        self["link_" .. name] = build
+                                      end
 end
 
 function mk.methods:dispatch_static(name, route)
@@ -261,9 +261,9 @@ end
 
 function mk.methods:serve_static()
    return function (wsapi_env)
-	    local filename = wsapi.APP_PATH .. wsapi_env.PATH_INFO
-	    return self:serve_file(wsapi_env, filename)
-	  end
+            local filename = wsapi.APP_PATH .. wsapi_env.PATH_INFO
+            return self:serve_file(wsapi_env, filename)
+          end
 end
 
 function mk.methods:serve_file(wsapi_env, filename)
@@ -281,9 +281,9 @@ function mk.methods:serve_file(wsapi_env, filename)
       if not mtime then return self.not_found(wsapi_env) end
       etag = string.format('"%s"', md5.sumhexa(tostring(mtime) .. filename))
       if wsapi_env.HTTP_IF_NONE_MATCH == etag then
-	res.status = 304
-	res.headers["Content-Length"] = 0
-	return res:finish()
+        res.status = 304
+        res.headers["Content-Length"] = 0
+        return res:finish()
       end
     end
     local file = io.open(filename, "rb")
@@ -291,19 +291,19 @@ function mk.methods:serve_file(wsapi_env, filename)
       return self.not_found(wsapi_env)
     else
       res.headers["Content-Type"] = mk.mime_types[ext] or 
-	"application/octet-stream"
+        "application/octet-stream"
       res.headers["Content-Length"] = file:seek("end")
       if etag then res.headers["ETag"] = etag end
       file:seek("set")
       local block_size = self.block_size or 4096
       return res.status, res.headers, coroutine.wrap(function ()
-						       local s = file:read(block_size)
-						       while s do
-							 coroutine.yield(s)
-							 s = file:read(block_size)
-						       end
-						       file:close()
-						     end)
+                                                       local s = file:read(block_size)
+                                                       while s do
+                                                         coroutine.yield(s)
+                                                         s = file:read(block_size)
+                                                       end
+                                                       file:close()
+                                                     end)
     end
   end
 end
@@ -317,7 +317,7 @@ function mk.methods:match(method, path, index)
       local entry = self.dispatch_table[method][index]
       local captures = { entry.route:match(path) }
       if #captures > 0 then
-	return entry.handler, captures, index
+        return entry.handler, captures, index
       end
     end
   end
@@ -327,21 +327,21 @@ function mk.methods:wrap(action)
   local handler
   if type(action) == "string" then
     handler = function (req, res, ...) 
-		return self[action](self, req, res) 
-	      end
+                return self[action](self, req, res) 
+              end
   else
     handler = action
   end
   return function (wsapi_env, ...)
-	   local req = request.new(wsapi_env, { mk_app = self })
-	   local res = response.new()
-	   local ans = { handler(req, res, ...) }
-	   if #ans == 0 then
-	     return res:finish()
-	   else
-	     return unpack(ans)
-	   end
-	 end
+           local req = request.new(wsapi_env, { mk_app = self })
+           local res = response.new()
+           local ans = { handler(req, res, ...) }
+           if #ans == 0 then
+             return res:finish()
+           else
+             return unpack(ans)
+           end
+         end
 end
 
 function mk.run(self, wsapi_env)
@@ -357,17 +357,17 @@ function mk.run(self, wsapi_env)
   captures = captures or {}
   repeat
     local ok, status, headers, res = xpcall(function () 
-					      return handler(wsapi_env, unpack(captures))
-					    end, debug.traceback)
+                                              return handler(wsapi_env, unpack(captures))
+                                            end, debug.traceback)
     if ok then
       if status == "MK_FORWARD" then
-	local path = util.url_decode(wsapi_env.PATH_INFO)
-	local method = string.lower(wsapi_env.REQUEST_METHOD)
-	handler, captures, index = self:match(method, path, index)
-	handler, captures = handler or self.not_found, captures or {}
-	ok = false
+        local path = util.url_decode(wsapi_env.PATH_INFO)
+        local method = string.lower(wsapi_env.REQUEST_METHOD)
+        handler, captures, index = self:match(method, path, index)
+        handler, captures = handler or self.not_found, captures or {}
+        ok = false
       else
-	return status, headers, res
+        return status, headers, res
       end
     else
       handler, captures = self.server_error, { status }
