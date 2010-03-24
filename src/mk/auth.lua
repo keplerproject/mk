@@ -83,12 +83,23 @@ function methods:provider()
            end
            local expires = (data.persistent and (os.time() + self.expiration)) or nil
            local user, message = self:login(data.username, data.password)
+	   local redirect_or_json = function (url)
+				      if url then
+					return res:redirect(url)
+				      else
+					res:content_type("application/json")
+					res:write(json.encode{ user = user, 
+							       message = message,
+							       expires = expires })
+					return res:finish()
+				      end
+				    end
            if user then
              res:set_cookie(self.cookie_name, { value = message, expires = expires })
-             return res:redirect(data.success)
+	     return redirect_or_json(data.success)
            else
              res:delete_cookie(self.cookie_name)
-             return res:redirect(data.failure .. "?message=" .. util.url_encode(message))
+	     return redirect_or_json(data.failure and data.failure .. "?message=" .. util.url_encode(message))
            end
          end
 end

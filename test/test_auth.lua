@@ -122,6 +122,22 @@ do
 end
 
 do
+  -- successful login with json data, json response
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
+  local env = util.make_env_post("json=" .. json.encode({ username = "mascarenhas",
+							  password = "foobar" }))
+  local status, headers, res = a:provider()(env)
+  assert(status == 200)
+  local res = json.decode(res())
+  local cookie = util.url_decode(headers["Set-Cookie"]:match("mk_auth_user=(.+)"))
+  local user, message = a:authenticate(cookie)
+  assert(user == "mascarenhas")
+  assert(res.user == user)
+  assert(a:authenticate(res.message) == user)
+end
+
+do
   -- successful login with json data, change cookie name
   local a = auth.new{ login = login, login_salt = login_salt, 
 		      session_salt = session_salt, cookie = "cookie" }
@@ -166,6 +182,20 @@ do
   assert(status == 302)
   assert(headers["Location"] == "/fail?message=invalid+password")
   assert(headers["Set-Cookie"]:match("mk_auth_user=xxx"))
+end
+
+do
+  -- bad login with json data, wrong password, json response
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
+  local env = util.make_env_post("json=" .. json.encode({ username = "mascarenhas",
+							  password = "foo" }))
+  local status, headers, res = a:provider()(env)
+  assert(status == 200)
+  assert(headers["Set-Cookie"]:match("mk_auth_user=xxx"))
+  local res = json.decode(res())
+  assert(not res.user)
+  assert(res.message == "invalid password")
 end
 
 do
