@@ -31,6 +31,14 @@ do
 end
 
 do
+  -- make token
+  local a = auth.new{ login = login, login_salt = login_salt, 
+		      session_salt = session_salt }
+  local user, message = "mascarenhas", a:token("mascarenhas")
+  assert(a:authenticate(message) == user)
+end
+
+do
   -- wrong password
   local a = auth.new{ login = login, login_salt = login_salt, 
 		      session_salt = session_salt }
