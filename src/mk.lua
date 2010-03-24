@@ -190,6 +190,7 @@ function mk.new(app)
   for k, v in pairs(mk.methods) do
     app[k] = v
   end
+  app.app_path = app.app_path or wsapi.app_path or "."
   app.run = function (wsapi_env) 
               return mk.run(app, wsapi_env)
             end
