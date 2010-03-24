@@ -13,16 +13,16 @@ template_methods.__index = template_methods
 function template_methods:render(req, res, env)
   local blocks = self.theme.blocks
   local areas = setmetatable({}, { __index = function (t, name)
-					       local area = function (args, has_block)
-							      local out = {}
-							      for _, block in ipairs(self.theme.areas[name]) do
-								out[#out+1] = blocks[block](req, res, env, block)
-							      end
-							      return table.concat(out)
-							    end
-					       t[name] = area
-					       return area
-					     end })
+                                               local area = function (args, has_block)
+                                                              local out = {}
+                                                              for _, block in ipairs(self.theme.areas[name]) do
+                                                                out[#out+1] = blocks[block](req, res, env, block)
+                                                              end
+                                                              return table.concat(out)
+                                                            end
+                                               t[name] = area
+                                               return area
+                                             end })
   local env = setmetatable({ areas = areas }, { __index = env })
   return self.tmpl:render(req, res, env)
 end
@@ -43,7 +43,8 @@ function methods:load(name, engine)
   end
 end
 
-function themes.new(blocks, name, path, theme)
+function themes.new(args)
+  local blocks, name, path, theme = args.blocks, args.name, args.path, args.config
   local theme_path = (path or "") .. "/" .. name
   local theme, err = theme or util.loadin(theme_path .. "/config.lua")
   if theme then

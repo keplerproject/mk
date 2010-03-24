@@ -45,8 +45,8 @@ songs:dispatch_get("hello", "/say/:name", "/samples/hello.lua")
 
 songs.blocks = {
   links = blocks.links(songs, { title = "Links",
-				links = { { "Kepler", "http://www.keplerproject.org" },
-					  { "Lua", "http://www.lua.org" } } })
+                                links = { { "Kepler", "http://www.keplerproject.org" },
+                                          { "Lua", "http://www.lua.org" } } })
 }
 
 ----------------------------------------------------------------
@@ -56,8 +56,8 @@ songs.blocks = {
 local function block_song_list(app, args, tmpl)
   tmpl = tmpl or template.compile[=[<ul>$songs[[<li>$it</li>]]</ul>]=]
   return function (req, res, env, name)
-	   return tmpl:render(req, res, setmetatable({ songs = args.list }, { __index = env }))
-	 end
+           return tmpl:render(req, res, setmetatable({ songs = args.list }, { __index = env }))
+         end
 end
 
 ----------------------------------------------------------------
@@ -71,7 +71,9 @@ local name = "default"
 local prefix = nil -- set to have a prefix in all template names
 local config = { areas = { main = { "song_list", "links" } } }
 
-songs.theme = themes.new(songs.blocks, name, nil, config)
+songs.theme = themes.new{ blocks = songs.blocks,
+                          name = name, 
+                          config = config }
 
 ----------------------------------------------------------------
 -- our templates, this should also be at some stable storage
@@ -102,20 +104,20 @@ songs.templates["/default/blocks/song_list"] = [[
 
 songs.blocks.song_list = block_song_list(songs, { 
                            list = {
-			     "Sgt. Pepper's Lonely Hearts Club Band",
-			     "With a Little Help from My Friends",
-			     "Lucy in the Sky with Diamonds",
-			     "Getting Better",
-			     "Fixing a Hole",
-			     "She's Leaving Home",
-			     "Being for the Benefit of Mr. Kite!",
-			     "Within You Without You",
-			     "When I'm Sixty-Four",
-			     "Lovely Rita",
-			     "Good Morning Good Morning",
-			     "Sgt. Pepper's Lonely Hearts Club Band (Reprise)",
-			     "A Day in the Life"
-			 } }, songs.theme:load("blocks/song_list", engine))
+                             "Sgt. Pepper's Lonely Hearts Club Band",
+                             "With a Little Help from My Friends",
+                             "Lucy in the Sky with Diamonds",
+                             "Getting Better",
+                             "Fixing a Hole",
+                             "She's Leaving Home",
+                             "Being for the Benefit of Mr. Kite!",
+                             "Within You Without You",
+                             "When I'm Sixty-Four",
+                             "Lovely Rita",
+                             "Good Morning Good Morning",
+                             "Sgt. Pepper's Lonely Hearts Club Band (Reprise)",
+                             "A Day in the Life"
+                         } }, songs.theme:load("blocks/song_list", engine))
 -- remove the last argument above to use the block's default template (inline
 -- at the block prototype)
 
