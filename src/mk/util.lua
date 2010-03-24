@@ -127,4 +127,14 @@ function util.htmlify(func)
   setfenv(func, env)
 end
 
+function util.merge(...)
+  local t = {}
+  for _, tab in ipairs{ ... } do
+    for k, v in pairs(tab) do
+      t[k] = v
+    end
+  end
+  return t
+end
+
 return util
