@@ -27,7 +27,7 @@ function template.load(filename)
 end
 
 function template.compile(str, filename)
-  return setmetatable({ template = cosmo.compile(str, filename) }, methods)
+  return setmetatable({ template = cosmo.compile(str, filename and "@" .. filename) }, methods)
 end
 
 return template

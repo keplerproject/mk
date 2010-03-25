@@ -94,6 +94,9 @@ local function build(parts, params)
   params.splat = params.splat or {}
   for _, part in ipairs(parts) do
     if part.tag == "param" then
+      if not params[part.name] then
+	error("route parameter " .. part.name .. " does not exist")
+      end
       local s = string.gsub (params[part.name], "([^%.@]+)",
 			     function (s) return wsapi.util.url_encode(s) end)
       res[#res+1] = part.prefix .. s

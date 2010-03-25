@@ -328,7 +328,7 @@ function mk.methods:wrap(action)
   local handler
   if type(action) == "string" then
     handler = function (req, res, ...) 
-                return self[action](self, req, res) 
+                return self[action](self, req, res, ...) 
               end
   else
     handler = action
