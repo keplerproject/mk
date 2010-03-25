@@ -129,9 +129,25 @@ end
 
 function util.merge(...)
   local t = {}
-  for _, tab in ipairs{ ... } do
-    for k, v in pairs(tab) do
-      t[k] = v
+  local ts = { ... }
+  for i = 1, select('#', ...) do
+    if ts[i] then
+      for k, v in pairs(ts[i]) do
+	t[k] = v
+      end
+    end
+  end
+  return t
+end
+
+function util.concat(...)
+  local t = {}
+  local ts = { ... }
+  for i = 1, select('#', ...) do
+    if ts[i] then
+      for k, v in ipairs(ts[i]) do
+	t[#t+1] = v
+      end
     end
   end
   return t

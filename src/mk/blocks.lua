@@ -1,5 +1,6 @@
 
 local template = require "mk.template"
+local util = require "mk.util"
 
 local blocks = {}
 
@@ -21,7 +22,13 @@ $js[[
 function blocks.javascript(app, args, tmpl)
   tmpl = tmpl or template.compile(js_tmpl)
   return function (req, res)
-	   return tmpl:render(req, res, { js = args or {} })
+	   local js = util.concat(args, app.js)
+	   for i, uri in ipairs(js) do
+	     if not uri:match("^[%a+]:") and uri:sub(1, 1) ~= "/" then
+	       js[i] = req:static_link("/" .. uri)
+	     end
+	   end
+	   return tmpl:render(req, res, { js = js })
 	 end
 end
 
@@ -34,7 +41,13 @@ $css[[
 function blocks.css(app, args, tmpl)
   tmpl = tmpl or template.compile(css_tmpl)
   return function (req, res)
-	   return tmpl:render(req, res, { css = args or {} })
+	   local css = util.concat(args, app.css)
+	   for i, uri in ipairs(css) do
+	     if not uri:match("^[%a+]:") and uri:sub(1, 1) ~= "/" then
+	       css[i] = req:static_link("/" .. uri)
+	     end
+	   end
+	   return tmpl:render(req, res, { css = css })
 	 end
 end
 
