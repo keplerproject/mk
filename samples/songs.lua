@@ -31,7 +31,7 @@ end
 
 function songs:index(req, res)
    -- load and render the pages/main template of our theme
-   res:write(songs.theme:load("pages/main", engine):render(req, res))
+   res:write(songs.theme:load("pages/main"):render(req, res))
 end
 
 -- internal route
@@ -72,8 +72,9 @@ local prefix = nil -- set to have a prefix in all template names
 local config = { areas = { main = { "song_list", "links" } } }
 
 songs.theme = themes.new{ blocks = songs.blocks,
-                          name = name, 
-                          config = config }
+                          name = name,
+                          config = config,
+                          engine = engine }
 
 ----------------------------------------------------------------
 -- our templates, this should also be at some stable storage
@@ -94,7 +95,7 @@ songs.templates["/default/blocks/song_list"] = [[
     <h1>Songs</h1>
       <table>
         $songs[=[<tr><td>$it</td></tr>]=]
-      </table> 
+      </table>
       <p><a href="$(req:link_hello({ greeting = "Hi" }, { name = "World" }))">Say Hi!</a></p>
 ]]
 
@@ -102,7 +103,7 @@ songs.templates["/default/blocks/song_list"] = [[
 -- finally, create block instance using one of our templates
 --
 
-songs.blocks.song_list = block_song_list(songs, { 
+songs.blocks.song_list = block_song_list(songs, {
                            list = {
                              "Sgt. Pepper's Lonely Hearts Club Band",
                              "With a Little Help from My Friends",
@@ -117,7 +118,7 @@ songs.blocks.song_list = block_song_list(songs, {
                              "Good Morning Good Morning",
                              "Sgt. Pepper's Lonely Hearts Club Band (Reprise)",
                              "A Day in the Life"
-                         } }, songs.theme:load("blocks/song_list", engine))
+                         } }, songs.theme:load("blocks/song_list"))
 -- remove the last argument above to use the block's default template (inline
 -- at the block prototype)
 
