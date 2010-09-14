@@ -28,7 +28,7 @@ function template_methods:render(req, res, env)
 end
 
 function methods:load(name, engine)
-  engine = engine or template
+  engine = engine or self.engine
   local cached = self.cache[name]
   if cached then
     return cached
@@ -44,13 +44,15 @@ function methods:load(name, engine)
 end
 
 function themes.new(args)
-  local blocks, name, path, theme = args.blocks, args.name, args.path, args.config
+  local blocks, name, path, theme, engine =
+    args.blocks, args.name, args.path, args.config, args.engine
   local theme_path = (path or "") .. "/" .. name
   local theme, err = theme or util.loadin(theme_path .. "/config.lua")
   if theme then
     theme.blocks = blocks
     theme.name = name
     theme.path = theme_path
+    theme.engine = engine or template
     theme.cache = setmetatable({}, { __mode = "v" })
     return setmetatable(theme, methods)
   else
