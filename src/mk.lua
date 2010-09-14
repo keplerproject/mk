@@ -191,7 +191,7 @@ function mk.new(app)
     app[k] = v
   end
   app.app_path = app.app_path or wsapi.app_path or "."
-  app.run = function (wsapi_env) 
+  app.run = function (wsapi_env)
               return mk.run(app, wsapi_env)
             end
   app.not_found = function (wsapi_env)
@@ -234,12 +234,12 @@ for _, method in ipairs{ "get", "post", "put", "delete" } do
                                         local build
                                         if type(handler) ~= "string" then
                                           table.insert(self.dispatch_table[method], { name = name,
-                                                                                      route = route, 
+                                                                                      route = route,
                                                                                       handler = handler })
                                           if route.build then
                                             build = function (self, wsapi_env, ...)
                                                       local prefix = self.prefix or wsapi_env.SCRIPT_NAME
-                                                      return prefix .. route:build(...) 
+                                                      return prefix .. route:build(...)
                                                     end
                                           end
                                         elseif route.build then
@@ -262,7 +262,7 @@ end
 
 function mk.methods:serve_static()
    return function (wsapi_env)
-            local filename = wsapi.APP_PATH .. wsapi_env.PATH_INFO
+            local filename = self.app_path .. wsapi_env.PATH_INFO
             return self:serve_file(wsapi_env, filename)
           end
 end
@@ -271,7 +271,7 @@ function mk.methods:serve_file(wsapi_env, filename)
   local res = response.new()
   local ext = string.match(filename, "%.([^%.]+)$")
   if self.use_xsendfile then
-    res.headers["Content-Type"] = mk.mime_types[ext] or 
+    res.headers["Content-Type"] = mk.mime_types[ext] or
       "application/octet-stream"
     res.headers["X-Sendfile"] = filename
     return res:finish()
@@ -291,7 +291,7 @@ function mk.methods:serve_file(wsapi_env, filename)
     if not file then
       return self.not_found(wsapi_env)
     else
-      res.headers["Content-Type"] = mk.mime_types[ext] or 
+      res.headers["Content-Type"] = mk.mime_types[ext] or
         "application/octet-stream"
       res.headers["Content-Length"] = file:seek("end")
       if etag then res.headers["ETag"] = etag end
@@ -327,8 +327,8 @@ end
 function mk.methods:wrap(action)
   local handler
   if type(action) == "string" then
-    handler = function (req, res, ...) 
-                return self[action](self, req, res, ...) 
+    handler = function (req, res, ...)
+                return self[action](self, req, res, ...)
               end
   else
     handler = action
@@ -357,7 +357,7 @@ function mk.run(self, wsapi_env)
   handler = handler or self.not_found
   captures = captures or {}
   repeat
-    local ok, status, headers, res = xpcall(function () 
+    local ok, status, headers, res = xpcall(function ()
                                               return handler(wsapi_env, unpack(captures))
                                             end, debug.traceback)
     if ok then
