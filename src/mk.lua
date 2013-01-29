@@ -1,4 +1,5 @@
 
+local wsapi = require "wsapi"
 local request = require "wsapi.request"
 local response = require "wsapi.response"
 local util = require "wsapi.util"
